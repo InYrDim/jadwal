@@ -346,19 +346,33 @@ h2{
 }
 .tk-del svg{width:16px; height:16px; stroke:var(--ink-2); fill:none; stroke-width:3; stroke-linecap:round}
 .tk-del:active{background:var(--bg-2)}
+.tk-ed{
+  appearance:none; flex:none; width:44px; height:44px; border:0; border-radius:50%; background:transparent; cursor:pointer;
+  display:grid; place-items:center;
+}
+.tk-ed svg{width:16px; height:16px; stroke:var(--ink-2); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
+.tk-ed:active{background:var(--bg-2)}
+.tk-item.editing{display:block; padding:10px; border-color:var(--wc,var(--pink-d)); opacity:1}
+.tk-edit{display:grid; gap:8px}
+.tk-eb{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+.tk-cancel,.tk-clr{
+  appearance:none; border:0; background:none; cursor:pointer; padding:8px 10px; min-height:44px;
+  font:800 14px/1.2 var(--font-body); color:var(--ink-2); text-decoration:underline;
+}
+.tk-clr{flex:none; padding:8px 4px; font-size:13px}
 .tk-form{display:flex; gap:8px}
-.tk-form input{
+.tk-form input,.tk-edit input{
   flex:1; min-width:0; min-height:46px; padding:0 16px; border-radius:999px;
   background:var(--card); color:var(--ink); border:2px solid var(--wedge,var(--line));
   font:700 16px/1.3 var(--font-body);
 }
 .tk-form input::placeholder{color:var(--ink-2); opacity:.8}
-.tk-form button{
+.tk-form button,.tk-ok{
   appearance:none; flex:none; min-height:46px; padding:0 20px; border-radius:999px; cursor:pointer;
   background:var(--wc,var(--pink-d)); color:#fff; border:2px solid var(--wd,var(--pink-dd)); box-shadow:0 3px 0 var(--wd,var(--pink-dd));
   font-weight:800; transition:transform .12s,box-shadow .12s;
 }
-.tk-form button:active{transform:translateY(3px); box-shadow:0 0 0 var(--wd,var(--pink-dd))}
+.tk-form button:active,.tk-ok:active{transform:translateY(3px); box-shadow:0 0 0 var(--wd,var(--pink-dd))}
 .tk-sync{margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; font-size:12px; font-weight:700; color:var(--ink-2)}
 .tk-sync.bad{color:var(--exam-txt)}
 .tk-sync button{
@@ -1232,19 +1246,21 @@ $("#tbody").addEventListener("click",()=>{
 
 /* ---------- Tugas harian, disimpan di Google Spreadsheet lewat Apps Script ---------- */
 /* Isi dua baris ini setelah Apps Script di-deploy (lihat PANDUAN.md). Kosong = tugas hanya tersimpan di perangkat ini. */
-const SHEETS_URL="https://script.google.com/macros/s/AKfycbzDWvEpKpoBgsuTeE8Msg9435AzwvXeyR2U4Rw9bkWilpuVimBi6N5lVdY1GlmumxOzKA/exec";   /* contoh: https://script.google.com/macros/s/AKfy.../exec */
+const SHEETS_URL="https://script.google.com/macros/s/AKfycbykZoxHvBPt2duEWKW58qFDWcGWkwR4qnJ7-2T-RYs5GY7nQEkJjk0L3gSko6RTFORIDg/exec";   /* contoh: https://script.google.com/macros/s/AKfy.../exec */
 const SHEETS_KEY="LUTFIA_!@#";   /* kode rahasia, harus sama dengan SECRET di Code.gs */
 
 const REMOTE=/^https:\/\/script\.google\.com\//.test(SHEETS_URL);
-const LS_T="jb4-tugas",LS_Q="jb4-antrian";
-let tasks=[],queue=[],tkBusy=false,tkState=REMOTE?"loading":"local",tkErr="";
+const LS_T="jb4-tugas",LS_Q="jb4-antrian",LS_V="jb4-versi";
+let tasks=[],queue=[],ver=0,ft=0,editingId="",editDraft=null,focusEdit=false,tkBusy=false,tkState=REMOTE?"loading":"local",tkErr="";
 try{
   tasks=JSON.parse(localStorage.getItem(LS_T)||"[]");
   queue=JSON.parse(localStorage.getItem(LS_Q)||"[]");
   if(!Array.isArray(tasks))tasks=[];if(!Array.isArray(queue))queue=[];
+  ver=localStorage.getItem(LS_T)?(+localStorage.getItem(LS_V)||0):0;
 }catch(e){tasks=[];queue=[];}
 const saveT=()=>{try{localStorage.setItem(LS_T,JSON.stringify(tasks));}catch(e){}};
 const saveQ=()=>{try{localStorage.setItem(LS_Q,JSON.stringify(queue));}catch(e){}};
+const saveV=()=>{try{localStorage.setItem(LS_V,String(ver));}catch(e){}};
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 function applyOp(l,op){
@@ -1253,6 +1269,7 @@ function applyOp(l,op){
     return l;
   }
   if(op.action==="done"){const t=l.find(x=>x.id===op.id);if(t)t.selesai=!!op.selesai;return l;}
+  if(op.action==="edit"){const t=l.find(x=>x.id===op.id);if(t){t.judul=op.judul;t.deadline=op.deadline||"";}return l;}
   if(op.action==="del")return l.filter(x=>x.id!==op.id);
   return l;
 }
@@ -1267,32 +1284,69 @@ async function timed(url,opt){
     return j;
   }finally{clearTimeout(tm);}
 }
-const sheetPost=op=>timed(SHEETS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...op,key:SHEETS_KEY})});
-const sheetGet=()=>timed(SHEETS_URL+"?key="+encodeURIComponent(SHEETS_KEY));
+const sheetBatch=ops=>timed(SHEETS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"batch",ops,key:SHEETS_KEY})});
+const sheetGet=()=>timed(SHEETS_URL+"?key="+encodeURIComponent(SHEETS_KEY)+"&v="+ver);
+
+/* gabungkan operasi yang saling meniadakan sebelum dikirim */
+function coalesce(){
+  const added=new Set(queue.filter(o=>o.action==="add").map(o=>o.id));
+  const deleted=new Set(queue.filter(o=>o.action==="del").map(o=>o.id));
+  const lastDone={},lastEdit={},addOp={};
+  queue.forEach((o,i)=>{if(o.action==="done")lastDone[o.id]=i;if(o.action==="edit")lastEdit[o.id]=i;if(o.action==="add")addOp[o.id]=o;});
+  queue=queue.filter((o,i)=>{
+    if(deleted.has(o.id)){
+      if(added.has(o.id))return false;      /* tambah lalu hapus: tidak perlu dikirim */
+      return o.action==="del";               /* sisakan hapus saja */
+    }
+    if(o.action==="done")return lastDone[o.id]===i;  /* centang bolak-balik: ambil yang terakhir */
+    if(o.action==="edit"){
+      if(lastEdit[o.id]!==i)return false;            /* beberapa kali ubah: ambil yang terakhir */
+      const a=addOp[o.id];
+      if(a){a.judul=o.judul;a.deadline=o.deadline;return false;}  /* tugas belum terkirim: lebur ke operasi tambah */
+    }
+    return true;
+  });
+  saveQ();
+}
 
 async function flush(){
   if(!REMOTE||tkBusy)return;
+  clearTimeout(ft);
   tkBusy=true;tkState=queue.length?"saving":"loading";tkErr="";renderSync();
+  let rejected=[];
   try{
     do{
-      while(queue.length){await sheetPost(queue[0]);queue.shift();saveQ();}
-      const j=await sheetGet();
-      tasks=(j.tasks||[]).map(t=>({...t}));
-      queue.forEach(op=>{tasks=applyOp(tasks,op);});
+      coalesce();
+      const ops=queue.slice();
+      /* ada perubahan: satu POST berisi semuanya, balasannya sudah memuat daftar terbaru.
+         tidak ada perubahan: GET ringan, server menjawab "sama" kalau versinya tidak berubah. */
+      const j=ops.length?await sheetBatch(ops):await sheetGet();
+      if(ops.length){
+        queue.splice(0,ops.length);saveQ();
+        (j.results||[]).forEach(r=>{if(!r.ok)rejected.push(r.error||"ditolak");});
+      }
+      if(j.tasks)tasks=j.tasks.map(t=>({...t}));
+      if(j.version!=null){ver=j.version;saveV();}
+      queue.forEach(op=>{tasks=applyOp(tasks,op);});   /* perubahan yang baru dibuat selama permintaan berjalan */
       saveT();
     }while(queue.length);
-    tkState="ok";
+    if(rejected.length){tkState="warn";tkErr=`${rejected.length} perubahan ditolak server (${rejected[0]}).`;}
+    else tkState="ok";
   }catch(e){
     tkState="fail";tkErr=e&&e.message==="unauthorized"?"Kode rahasia tidak cocok dengan Code.gs.":"";
   }
   tkBusy=false;
   afterChange();
 }
+/* tunggu sebentar supaya beberapa ketukan beruntun dikirim sebagai satu permintaan */
 function mutate(op){
   tasks=applyOp(tasks,op);saveT();
-  if(REMOTE){queue.push(op);saveQ();}
+  if(REMOTE){
+    queue.push(op);saveQ();
+    if(!tkBusy){tkState="saving";tkErr="";}
+    clearTimeout(ft);ft=setTimeout(flush,700);
+  }
   afterChange();
-  flush();
 }
 
 function refreshDots(){
@@ -1308,6 +1362,7 @@ function renderSync(){
   else if(tkState==="loading")t="Memuat tugas dari Spreadsheet…";
   else if(tkState==="saving")t="Menyimpan ke Spreadsheet…";
   else if(tkState==="ok")t="Tersimpan di Google Spreadsheet.";
+  else if(tkState==="warn"){bad=true;t=tkErr;}
   else{
     bad=true;retry=true;
     t=tkErr||(queue.length?`${queue.length} perubahan belum tersimpan ke Spreadsheet.`:"Tidak bisa memuat dari Spreadsheet.");
@@ -1335,15 +1390,27 @@ function tkBadge(di,it){
 }
 function renderTaskBox(){
   const c=tkCtx(),box=$("#tkList");if(!c||!box)return;
+  const oj=$("#tkEditJ"),od=$("#tkEditD"),hadFocus=!!oj&&document.activeElement===oj;
+  if(editingId&&oj)editDraft={j:oj.value,d:od.value};
   const list=tasks.filter(t=>t.tanggal===c.d.d&&t.kegiatan===c.key).sort((a,b)=>(a.selesai-b.selesai)||(dlKey(a)<dlKey(b)?-1:dlKey(a)>dlKey(b)?1:0)||(a.dibuat-b.dibuat));
+  if(editingId&&!list.some(t=>t.id===editingId)){editingId="";editDraft=null;}
   const left=list.filter(t=>!t.selesai).length;
   $("#tkCount").textContent=list.length?(left?`${left} belum selesai`:"Semua selesai"):"";
   $("#tkCount").hidden=!list.length;
   box.innerHTML=list.length
-    ?list.map(t=>`<li class="tk-item${t.selesai?" done":""}" data-id="${esc(t.id)}"><label class="tk-chk"><input type="checkbox"${t.selesai?" checked":""}><span class="tk-box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="tk-body"><span class="tk-tx">${esc(t.judul)}</span>${dueHtml(t)}</span></label><button type="button" class="tk-del" aria-label="Hapus tugas: ${esc(t.judul)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>`).join("")
+    ?list.map(t=>t.id===editingId
+      ?`<li class="tk-item editing" data-id="${esc(t.id)}"><form class="tk-edit" id="tkEdit" autocomplete="off"><input id="tkEditJ" type="text" maxlength="200" enterkeyhint="done" aria-label="Judul tugas"><label class="tk-dl"><span>Deadline</span><input id="tkEditD" type="date" aria-label="Deadline tugas"><button type="button" class="tk-clr">Kosongkan</button></label><div class="tk-eb"><button type="submit" class="tk-ok">Simpan</button><button type="button" class="tk-cancel">Batal</button></div></form></li>`
+      :`<li class="tk-item${t.selesai?" done":""}" data-id="${esc(t.id)}"><label class="tk-chk"><input type="checkbox"${t.selesai?" checked":""}><span class="tk-box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="tk-body"><span class="tk-tx">${esc(t.judul)}</span>${dueHtml(t)}</span></label><button type="button" class="tk-ed" aria-label="Ubah tugas: ${esc(t.judul)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button type="button" class="tk-del" aria-label="Hapus tugas: ${esc(t.judul)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>`).join("")
     :`<li class="tk-empty">Belum ada tugas untuk kegiatan ini.</li>`;
+  if(editingId){
+    const t=list.find(x=>x.id===editingId),j=$("#tkEditJ"),d=$("#tkEditD");
+    j.value=editDraft?editDraft.j:t.judul;
+    d.value=editDraft?editDraft.d:(t.deadline||"");
+    if(hadFocus||focusEdit){focusEdit=false;j.focus();j.setSelectionRange(j.value.length,j.value.length);}
+  }
   renderSync();
 }
+function endEdit(){editingId="";editDraft=null;renderTaskBox();}
 function renderOverview(){
   const box=$("#ovw");if(!box)return;
   const list=tasks.filter(t=>!t.selesai).sort((a,b)=>(dlKey(a)<dlKey(b)?-1:dlKey(a)>dlKey(b)?1:0)||(a.tanggal<b.tanggal?-1:a.tanggal>b.tanggal?1:0)||(a.dibuat-b.dibuat));
@@ -1382,6 +1449,17 @@ $("#ovList").addEventListener("click",e=>{const b=e.target.closest(".ov-row");if
 function afterChange(){refreshDots();renderHead();renderList(false);renderTaskBox();}
 
 sheet.addEventListener("submit",e=>{
+  if(e.target.id==="tkEdit"){
+    e.preventDefault();
+    const t=tasks.find(x=>x.id===editingId),j=$("#tkEditJ"),d=$("#tkEditD");
+    if(!t)return endEdit();
+    const judul=j.value.trim().replace(/\s+/g," ").slice(0,200),deadline=/^\d{4}-\d{2}-\d{2}$/.test(d.value)?d.value:"";
+    if(!judul){j.focus();return;}
+    const changed=judul!==t.judul||deadline!==(t.deadline||"");
+    const id=t.id;editingId="";editDraft=null;
+    if(changed)mutate({action:"edit",id,judul,deadline});else renderTaskBox();
+    return;
+  }
   if(e.target.id!=="tkForm")return;
   e.preventDefault();
   const c=tkCtx(),inp=$("#tkIn"),judul=inp.value.trim().replace(/\s+/g," ").slice(0,200);
@@ -1398,10 +1476,18 @@ sheet.addEventListener("change",e=>{
 });
 sheet.addEventListener("click",e=>{
   if(e.target.closest("#tkRetry")){flush();return;}
+  const ed=e.target.closest(".tk-ed");
+  if(ed){editingId=ed.closest(".tk-item").dataset.id;editDraft=null;focusEdit=true;renderTaskBox();return;}
+  if(e.target.closest(".tk-cancel")){endEdit();return;}
+  if(e.target.closest(".tk-clr")){const d=$("#tkEditD");if(d){d.value="";d.focus();}return;}
   const b=e.target.closest(".tk-del");if(!b)return;
   const t=tasks.find(x=>x.id===b.closest(".tk-item").dataset.id);
   if(t&&confirm(`Hapus tugas "${t.judul}"?`))mutate({action:"del",id:t.id});
 });
+sheet.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&e.target.closest("#tkEdit")){e.preventDefault();e.stopPropagation();endEdit();}
+});
+modal.addEventListener("close",()=>{editingId="";editDraft=null;});
 window.addEventListener("online",flush);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)flush();});
 
