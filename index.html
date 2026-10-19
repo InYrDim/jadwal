@@ -308,6 +308,98 @@ h2{
 .list.anim > *{animation:pop .38s backwards; animation-delay:calc(var(--i,0) * 45ms)}
 @keyframes pop{from{opacity:0; transform:translateY(10px) scale(.97)}}
 
+
+/* ---------- Tugas harian (Google Spreadsheet) ---------- */
+.day{position:relative}
+.day.hastask::after{content:""; position:absolute; top:6px; right:8px; width:8px; height:8px; border-radius:50%; background:var(--wc,var(--pink-d))}
+.day.hastask[aria-pressed="true"]::after{background:#fff}
+.tk{
+  margin:0; padding:14px 16px 16px; border-radius:24px; display:grid; gap:12px;
+  background:var(--card); border:2px solid var(--wedge,var(--line)); box-shadow:0 4px 0 var(--wedge,var(--candy));
+}
+.tk-head{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.tk .tk-head h3{margin:0; font:400 22px/1.15 var(--font-display); color:var(--wc,var(--title)); font-synthesis:none}
+.tk-count{
+  flex:none; font-size:12px; font-weight:800; padding:2px 10px; border-radius:999px;
+  background:var(--wbg,var(--bg-2)); color:var(--wc,var(--pink-d)); border:2px solid var(--wedge,var(--line));
+}
+.tkb{font-size:12px; font-weight:800; line-height:1.4; padding:1px 10px; border-radius:999px; background:var(--card); color:var(--ink); border:2px solid var(--c-edge)}
+.tk-list{list-style:none; margin:0; padding:0; display:grid; gap:8px}
+.tk-empty{margin:0; font-size:14px; font-weight:700; color:var(--ink-2); text-wrap:pretty}
+.tk-item{display:flex; align-items:center; border:2px solid var(--line); border-radius:18px; background:var(--card)}
+.tk-chk{flex:1; min-width:0; display:flex; align-items:center; gap:12px; min-height:48px; padding:6px 6px 6px 12px; cursor:pointer}
+.tk-chk input{position:absolute; opacity:0; width:1px; height:1px}
+.tk-box{
+  flex:none; width:26px; height:26px; border-radius:9px; display:grid; place-items:center;
+  background:var(--card); border:2px solid var(--wedge,var(--line));
+}
+.tk-box svg{width:16px; height:16px; fill:none; stroke:#fff; stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; opacity:0}
+.tk-chk input:checked + .tk-box{background:var(--wc,var(--pink-d)); border-color:var(--wd,var(--pink-dd))}
+.tk-chk input:checked + .tk-box svg{opacity:1}
+.tk-chk input:focus-visible + .tk-box{outline:3px solid var(--focus); outline-offset:3px}
+.tk-tx{min-width:0; font-weight:700; font-size:16px; line-height:1.35; overflow-wrap:anywhere; text-wrap:pretty}
+.tk-item.done .tk-tx{text-decoration:line-through; color:var(--ink-2)}
+.tk-item.done{opacity:.72}
+.tk-del{
+  appearance:none; flex:none; width:44px; height:44px; border:0; border-radius:50%; background:transparent; cursor:pointer;
+  display:grid; place-items:center;
+}
+.tk-del svg{width:16px; height:16px; stroke:var(--ink-2); fill:none; stroke-width:3; stroke-linecap:round}
+.tk-del:active{background:var(--bg-2)}
+.tk-form{display:flex; gap:8px}
+.tk-form input{
+  flex:1; min-width:0; min-height:46px; padding:0 16px; border-radius:999px;
+  background:var(--card); color:var(--ink); border:2px solid var(--wedge,var(--line));
+  font:700 16px/1.3 var(--font-body);
+}
+.tk-form input::placeholder{color:var(--ink-2); opacity:.8}
+.tk-form button{
+  appearance:none; flex:none; min-height:46px; padding:0 20px; border-radius:999px; cursor:pointer;
+  background:var(--wc,var(--pink-d)); color:#fff; border:2px solid var(--wd,var(--pink-dd)); box-shadow:0 3px 0 var(--wd,var(--pink-dd));
+  font-weight:800; transition:transform .12s,box-shadow .12s;
+}
+.tk-form button:active{transform:translateY(3px); box-shadow:0 0 0 var(--wd,var(--pink-dd))}
+.tk-sync{margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; font-size:12px; font-weight:700; color:var(--ink-2)}
+.tk-sync.bad{color:var(--exam-txt)}
+.tk-sync button{
+  appearance:none; border:0; background:none; cursor:pointer; padding:8px 4px; min-height:36px;
+  font:800 12px/1.2 var(--font-body); color:var(--wc,var(--pink-d)); text-decoration:underline;
+}
+
+
+/* ---------- Ringkasan tugas belum selesai + deadline ---------- */
+.ovw{padding-block:2px 6px}
+.ov{background:var(--card); border:2px solid var(--line); border-radius:24px; box-shadow:0 4px 0 var(--candy)}
+.ov summary{list-style:none; display:flex; align-items:center; gap:10px; min-height:56px; padding:10px 16px; cursor:pointer; border-radius:22px}
+.ov summary::-webkit-details-marker{display:none}
+.ov summary::after{
+  content:""; flex:none; width:9px; height:9px; margin:0 4px 3px 2px;
+  border-right:3px solid var(--ink-2); border-bottom:3px solid var(--ink-2); transform:rotate(45deg); transition:transform .15s;
+}
+.ov[open] summary::after{transform:rotate(-135deg); margin-bottom:-3px}
+.ov-head{flex:1; min-width:0; display:grid; gap:1px}
+.ov-t{font-weight:800; font-size:16px}
+.ov-s{font-size:13px; font-weight:700; color:var(--ink-2); text-wrap:pretty; overflow-wrap:anywhere}
+.ov-s.late{color:var(--exam-txt)}
+.ov-n{flex:none; font-size:13px; font-weight:800; padding:2px 12px; border-radius:999px; background:var(--pink-d); color:#fff}
+.ov-list{list-style:none; margin:0; padding:0 12px 12px; display:grid; gap:8px}
+.ov-row{
+  appearance:none; width:100%; text-align:left; cursor:pointer; display:grid; gap:2px; padding:10px 14px;
+  border-radius:18px; background:var(--card); color:var(--ink); border:2px solid var(--wedge,var(--line)); font:inherit;
+}
+.ov-row:active{background:var(--bg-2)}
+.ov-tx{font-weight:800; font-size:16px; line-height:1.3; overflow-wrap:anywhere}
+.ov-meta{font-size:13px; font-weight:700; color:var(--ink-2); overflow-wrap:anywhere}
+.ov-due{font-size:13px; font-weight:800; color:var(--ink)}
+.ov-due.late,.tk-due.late{color:var(--exam-txt)}
+.tk-body{min-width:0; display:grid; gap:1px}
+.tk-due{font-size:12px; font-weight:800; color:var(--ink-2)}
+.tk-item.done .tk-due{color:var(--ink-2)}
+.tk-form{flex-wrap:wrap}
+.tk-dl{flex:1 1 100%; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; color:var(--ink-2)}
+.tk-dl span{flex:none}
+.tk-dl input{flex:1}
+
 /* ---------- Detail dialog ---------- */
 .item:not(.self) .card{cursor:pointer; transition:transform .12s,box-shadow .12s}
 .item:not(.self) .card:active{transform:translateY(3px); box-shadow:0 1px 0 var(--c-edge)}
@@ -502,6 +594,15 @@ body.hastoast .foot{padding-bottom:190px}
         <span>Tampilkan self learning</span>
       </label>
     </div>
+  </div>
+</section>
+
+<section class="ovw gut" id="ovw" aria-label="Tugas belum selesai" hidden>
+  <div class="col">
+    <details class="ov" id="ov">
+      <summary><span class="ov-head"><span class="ov-t">Tugas belum selesai</span><span class="ov-s" id="ovS"></span></span><span class="ov-n" id="ovN"></span></summary>
+      <ul class="ov-list" id="ovList"></ul>
+    </details>
   </div>
 </section>
 
@@ -794,7 +895,7 @@ function buildStrip(){
     const ds=isToday?"Hari ini":f.exam?"Ujian":!f.has?"Mandiri":"";
     const cls=(f.exam?" ujian":"")+(!f.has?" mandiri":"")+(isToday?" today":"");
     const lab=`${DOW[d.dow]}, ${d.dd} ${MON[d.m-1]} ${d.y}${f.exam?", ada ujian":""}${!f.has?", self learning":""}${isToday?", hari ini":""}`;
-    h+=`<button type="button" class="day w${d.dow}${cls}" data-i="${i}" aria-pressed="false" aria-label="${esc(lab)}"><span class="dw">${DOWS[d.dow]}</span><span class="dn">${d.dd}</span><span class="ds">${ds}</span></button>`;
+    h+=`<button type="button" class="day w${d.dow}${cls}" data-i="${i}" aria-pressed="false" data-lab="${esc(lab)}" aria-label="${esc(lab)}"><span class="dw">${DOWS[d.dow]}</span><span class="dn">${d.dd}</span><span class="ds">${ds}</span></button>`;
   });
   h+="</div></div>";
   strip.innerHTML=h;
@@ -822,10 +923,12 @@ function renderHead(){
     msg=`Ada ${acts.length} kegiatan ${when}. ${CHEER[sel%CHEER.length](callName(sel))}`;
   }
   $("#msg").textContent=msg;
-  $("#facts").innerHTML=acts.length
+  const tkN=pendingCount(d.d);
+  $("#facts").innerHTML=(acts.length
     ?`<li class="fact">${acts.length} kegiatan</li><li class="fact">${acts[0].start} sampai ${acts[acts.length-1].end}</li>`
-    :"";
+    :"")+(tkN?`<li class="fact">${tkN} tugas belum selesai</li>`:"");
   document.querySelectorAll(".day").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.i===sel)));
+  renderOverview();
 }
 
 function renderList(anim){
@@ -869,7 +972,7 @@ function renderList(anim){
     }).join("");
     const when=it.ranges.length>1?`<p class="when">${it.ranges.map(r=>r.join("–")).join(" dan ")}</p>`:"";
     const idx=shown.push({it,di:sel})-1;
-    h+=`<li class="item k-${first.c}" data-idx="${idx}" style="--i:${k++}">${time}<div class="card" role="button" tabindex="0" aria-haspopup="dialog"><div class="top">${chipHtml(first.c,tag)}${subjBadges(it.parts)}<span class="dur">${it.mins} menit</span>${status}<span class="more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></div>${parts}${when}</div></li>`;
+    h+=`<li class="item k-${first.c}" data-idx="${idx}" style="--i:${k++}">${time}<div class="card" role="button" tabindex="0" aria-haspopup="dialog"><div class="top">${chipHtml(first.c,tag)}${subjBadges(it.parts)}${tkBadge(sel,it)}<span class="dur">${it.mins} menit</span>${status}<span class="more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></div>${parts}${when}</div></li>`;
   });
   listEl.className="list"+(anim?" anim":"");
   listEl.innerHTML=h;
@@ -1023,8 +1126,10 @@ function renderDetail(refocusTab){
     +`<h2 class="m-title" id="mTitle">${esc(a.t)}</h2>${a.s?`<p class="m-sub">${esc(a.s)}</p>`:""}${tabs}</div>`
     +`<div class="sh-body">`
     +`<section class="msec w${d.dow}"><h3>Waktu</h3><p class="when-line">${DOW[d.dow]}, ${d.dd} ${MON[d.m-1]} ${d.y}<span class="relpill">${rel(d.d)}</span></p><p class="when-sub">${it.ranges.map(r=>r.join("–")).join(" dan ")}, ${it.mins} menit</p></section>`
+    +`<section class="msec tk w${d.dow}" aria-labelledby="tkTitle"><div class="tk-head"><h3 id="tkTitle">Tugas kegiatan ini</h3><span class="tk-count" id="tkCount"></span></div><ul class="tk-list" id="tkList"></ul><form class="tk-form" id="tkForm" autocomplete="off"><input id="tkIn" type="text" maxlength="200" enterkeyhint="done" aria-label="Tugas baru" placeholder="Tulis tugas baru"><button type="submit">Tambah</button><label class="tk-dl"><span>Deadline (opsional)</span><input id="tkDue" type="date" aria-label="Deadline tugas"></label></form><p class="tk-sync" id="tkSync" aria-live="polite"></p></section>`
     +`<section class="msec"><h3>Dosen pengampu</h3>${dos}</section>`
     +again+`</div>`;
+  renderTaskBox();
   if(refocusTab){const t=sheet.querySelector('.ptab[aria-pressed="true"]');if(t)t.focus();}
 }
 function openDetail(idx){
@@ -1125,6 +1230,181 @@ $("#tbody").addEventListener("click",()=>{
   go(u.di,true);scrollToHead(true);
 });
 
+/* ---------- Tugas harian, disimpan di Google Spreadsheet lewat Apps Script ---------- */
+/* Isi dua baris ini setelah Apps Script di-deploy (lihat PANDUAN.md). Kosong = tugas hanya tersimpan di perangkat ini. */
+const SHEETS_URL="https://script.google.com/macros/s/AKfycbzDWvEpKpoBgsuTeE8Msg9435AzwvXeyR2U4Rw9bkWilpuVimBi6N5lVdY1GlmumxOzKA/exec";   /* contoh: https://script.google.com/macros/s/AKfy.../exec */
+const SHEETS_KEY="LUTFIA_!@#";   /* kode rahasia, harus sama dengan SECRET di Code.gs */
+
+const REMOTE=/^https:\/\/script\.google\.com\//.test(SHEETS_URL);
+const LS_T="jb4-tugas",LS_Q="jb4-antrian";
+let tasks=[],queue=[],tkBusy=false,tkState=REMOTE?"loading":"local",tkErr="";
+try{
+  tasks=JSON.parse(localStorage.getItem(LS_T)||"[]");
+  queue=JSON.parse(localStorage.getItem(LS_Q)||"[]");
+  if(!Array.isArray(tasks))tasks=[];if(!Array.isArray(queue))queue=[];
+}catch(e){tasks=[];queue=[];}
+const saveT=()=>{try{localStorage.setItem(LS_T,JSON.stringify(tasks));}catch(e){}};
+const saveQ=()=>{try{localStorage.setItem(LS_Q,JSON.stringify(queue));}catch(e){}};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+function applyOp(l,op){
+  if(op.action==="add"){
+    if(!l.some(t=>t.id===op.id))l.push({id:op.id,tanggal:op.tanggal,kegiatan:op.kegiatan||"",deadline:op.deadline||"",judul:op.judul,selesai:false,dibuat:op.dibuat});
+    return l;
+  }
+  if(op.action==="done"){const t=l.find(x=>x.id===op.id);if(t)t.selesai=!!op.selesai;return l;}
+  if(op.action==="del")return l.filter(x=>x.id!==op.id);
+  return l;
+}
+function pendingCount(ds){return tasks.filter(t=>t.tanggal===ds&&!t.selesai).length;}
+
+async function timed(url,opt){
+  const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),20000);
+  try{
+    const r=await fetch(url,{...opt,signal:ac.signal});
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||"gagal");
+    return j;
+  }finally{clearTimeout(tm);}
+}
+const sheetPost=op=>timed(SHEETS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...op,key:SHEETS_KEY})});
+const sheetGet=()=>timed(SHEETS_URL+"?key="+encodeURIComponent(SHEETS_KEY));
+
+async function flush(){
+  if(!REMOTE||tkBusy)return;
+  tkBusy=true;tkState=queue.length?"saving":"loading";tkErr="";renderSync();
+  try{
+    do{
+      while(queue.length){await sheetPost(queue[0]);queue.shift();saveQ();}
+      const j=await sheetGet();
+      tasks=(j.tasks||[]).map(t=>({...t}));
+      queue.forEach(op=>{tasks=applyOp(tasks,op);});
+      saveT();
+    }while(queue.length);
+    tkState="ok";
+  }catch(e){
+    tkState="fail";tkErr=e&&e.message==="unauthorized"?"Kode rahasia tidak cocok dengan Code.gs.":"";
+  }
+  tkBusy=false;
+  afterChange();
+}
+function mutate(op){
+  tasks=applyOp(tasks,op);saveT();
+  if(REMOTE){queue.push(op);saveQ();}
+  afterChange();
+  flush();
+}
+
+function refreshDots(){
+  document.querySelectorAll(".day").forEach(b=>{
+    const n=pendingCount(days[+b.dataset.i].d);
+    b.classList.toggle("hastask",n>0);
+    b.setAttribute("aria-label",b.dataset.lab+(n?`, ${n} tugas belum selesai`:""));
+  });
+}
+function renderSync(){
+  const el=$("#tkSync");if(!el)return;let t="",bad=false,retry=false;
+  if(tkState==="local")t="Belum terhubung ke Google Spreadsheet. Tugas tersimpan di perangkat ini saja.";
+  else if(tkState==="loading")t="Memuat tugas dari Spreadsheet…";
+  else if(tkState==="saving")t="Menyimpan ke Spreadsheet…";
+  else if(tkState==="ok")t="Tersimpan di Google Spreadsheet.";
+  else{
+    bad=true;retry=true;
+    t=tkErr||(queue.length?`${queue.length} perubahan belum tersimpan ke Spreadsheet.`:"Tidak bisa memuat dari Spreadsheet.");
+  }
+  el.className="tk-sync"+(bad?" bad":"");
+  el.innerHTML=`<span>${esc(t)}</span>`+(retry?`<button type="button" id="tkRetry">Coba lagi</button>`:"");
+}
+const MON3=m=>MON[m-1].slice(0,3);
+function fmtDl(ds){
+  const [y,m,d]=ds.split("-").map(Number),w=new Date(Date.UTC(y,m-1,d)).getUTCDay();
+  return `${DOWS[w]}, ${d} ${MON3(m)}${y!==+now().d.slice(0,4)?" "+y:""}`;
+}
+function dueRel(ds){
+  const n=dayNum(ds)-dayNum(now().d);
+  return n===0?"hari ini":n===1?"besok":n>1?`${n} hari lagi`:`terlambat ${-n} hari`;
+}
+const isLate=t=>!t.selesai&&!!t.deadline&&t.deadline<now().d;
+const dlKey=t=>t.deadline||"9999-99-99";
+const dueHtml=t=>t.deadline?`<span class="tk-due${isLate(t)?" late":""}">Deadline ${esc(fmtDl(t.deadline))}${t.selesai?"":", "+esc(dueRel(t.deadline))}</span>`:"";
+const tkCtx=()=>detail?{d:days[detail.di],key:detail.it.parts[detail.part][1]}:null;
+function tkBadge(di,it){
+  const keys=it.parts.map(p=>p[1]),d=days[di].d;
+  const n=tasks.filter(t=>t.tanggal===d&&!t.selesai&&keys.includes(t.kegiatan)).length;
+  return n?`<span class="tkb">${n} tugas</span>`:"";
+}
+function renderTaskBox(){
+  const c=tkCtx(),box=$("#tkList");if(!c||!box)return;
+  const list=tasks.filter(t=>t.tanggal===c.d.d&&t.kegiatan===c.key).sort((a,b)=>(a.selesai-b.selesai)||(dlKey(a)<dlKey(b)?-1:dlKey(a)>dlKey(b)?1:0)||(a.dibuat-b.dibuat));
+  const left=list.filter(t=>!t.selesai).length;
+  $("#tkCount").textContent=list.length?(left?`${left} belum selesai`:"Semua selesai"):"";
+  $("#tkCount").hidden=!list.length;
+  box.innerHTML=list.length
+    ?list.map(t=>`<li class="tk-item${t.selesai?" done":""}" data-id="${esc(t.id)}"><label class="tk-chk"><input type="checkbox"${t.selesai?" checked":""}><span class="tk-box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="tk-body"><span class="tk-tx">${esc(t.judul)}</span>${dueHtml(t)}</span></label><button type="button" class="tk-del" aria-label="Hapus tugas: ${esc(t.judul)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>`).join("")
+    :`<li class="tk-empty">Belum ada tugas untuk kegiatan ini.</li>`;
+  renderSync();
+}
+function renderOverview(){
+  const box=$("#ovw");if(!box)return;
+  const list=tasks.filter(t=>!t.selesai).sort((a,b)=>(dlKey(a)<dlKey(b)?-1:dlKey(a)>dlKey(b)?1:0)||(a.tanggal<b.tanggal?-1:a.tanggal>b.tanggal?1:0)||(a.dibuat-b.dibuat));
+  box.hidden=!list.length;
+  if(!list.length)return;
+  const late=list.filter(isLate).length,first=list.find(t=>t.deadline);
+  $("#ovN").textContent=list.length;
+  const s=$("#ovS");
+  s.className="ov-s"+(late?" late":"");
+  s.textContent=(late?`${late} terlambat. `:"")+(first?`Paling dekat: ${first.judul}, ${dueRel(first.deadline)}.`:"Belum ada yang diberi deadline.");
+  $("#ovList").innerHTML=list.map(t=>{
+    const di=days.findIndex(x=>x.d===t.tanggal),dw=di>=0?days[di].dow:0,a=ACT[t.kegiatan];
+    const meta=(a?a.t:"Tanpa kegiatan")+(di>=0?`, ${DOWS[dw]} ${days[di].dd} ${MON3(days[di].m)}`:"");
+    const due=t.deadline?`Deadline ${fmtDl(t.deadline)}, ${dueRel(t.deadline)}`:"Tanpa deadline";
+    return `<li><button type="button" class="ov-row w${dw||1}" data-id="${esc(t.id)}"><span class="ov-tx">${esc(t.judul)}</span><span class="ov-meta">${esc(meta)}</span><span class="ov-due${isLate(t)?" late":""}">${esc(due)}</span></button></li>`;
+  }).join("");
+}
+function openTaskItem(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  const di=days.findIndex(x=>x.d===t.tanggal);if(di<0)return;
+  let found=null,pi=0;
+  buildItems(days[di],"all").forEach(it=>{
+    if(found||it.type!=="act")return;
+    const k=it.parts.findIndex(p=>p[1]===t.kegiatan);
+    if(k>=0){found=it;pi=k;}
+  });
+  go(di,!found);
+  if(!found){scrollToHead(true);return;}
+  detail={it:found,di,part:pi};
+  renderDetail(false);
+  document.documentElement.classList.add("noscroll");
+  if(typeof modal.showModal==="function"){if(!modal.open)modal.showModal();}else modal.setAttribute("open","");
+  const body=sheet.querySelector(".sh-body");if(body)body.scrollTop=0;
+}
+$("#ovList").addEventListener("click",e=>{const b=e.target.closest(".ov-row");if(b)openTaskItem(b.dataset.id);});
+function afterChange(){refreshDots();renderHead();renderList(false);renderTaskBox();}
+
+sheet.addEventListener("submit",e=>{
+  if(e.target.id!=="tkForm")return;
+  e.preventDefault();
+  const c=tkCtx(),inp=$("#tkIn"),judul=inp.value.trim().replace(/\s+/g," ").slice(0,200);
+  if(!c)return;
+  if(!judul){inp.focus();return;}
+  const du=$("#tkDue"),deadline=/^\d{4}-\d{2}-\d{2}$/.test(du.value)?du.value:"";
+  inp.value="";du.value="";
+  mutate({action:"add",id:newId(),tanggal:c.d.d,kegiatan:c.key,deadline,judul,dibuat:Date.now()});
+  inp.focus();
+});
+sheet.addEventListener("change",e=>{
+  const li=e.target.closest(".tk-item");if(!li||e.target.type!=="checkbox")return;
+  mutate({action:"done",id:li.dataset.id,selesai:e.target.checked});
+});
+sheet.addEventListener("click",e=>{
+  if(e.target.closest("#tkRetry")){flush();return;}
+  const b=e.target.closest(".tk-del");if(!b)return;
+  const t=tasks.find(x=>x.id===b.closest(".tk-item").dataset.id);
+  if(t&&confirm(`Hapus tugas "${t.judul}"?`))mutate({action:"del",id:t.id});
+});
+window.addEventListener("online",flush);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)flush();});
+
 /* start */
 (function(){
   const t=now(),h=location.hash.slice(1);
@@ -1132,12 +1412,14 @@ $("#tbody").addEventListener("click",()=>{
   if(i<0)i=days.findIndex(x=>x.d===t.d);
   if(i<0)i=days.findIndex(x=>x.d>t.d);
   if(i<0)i=days.length-1;
-  buildStrip();syncSeg();
+  buildStrip();syncSeg();refreshDots();
   go(i,false);
   renderToast();
   requestAnimationFrame(()=>centerPill(false));
+  flush();
 })();
-setInterval(()=>{renderList(false);renderToast();},60000);
+setInterval(()=>{renderList(false);renderToast();renderOverview();},60000);
+if(REMOTE)setInterval(()=>{if(!document.hidden)flush();},120000);
 })();
 </script>
 
